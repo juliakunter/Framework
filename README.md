@@ -1,4 +1,4 @@
-Hallo
+
 Profiel index ansicht
 <img width="1120" height="533" alt="Profiel" src="https://github.com/user-attachments/assets/7d392dc6-6114-4eb9-b1a1-7fdf01890eaf" />
 
