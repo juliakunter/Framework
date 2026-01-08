@@ -1,65 +1,44 @@
 <div class="container">
-    <h2>Meine Nachrichten</h2>
+    <h1>NoteController/index</h1>
+    <div class="box">
 
-    <?php if (!empty($this->messages)) : ?>
-        <?php foreach ($this->messages as $msg) : ?>
-            <div style="
-                border:1px solid #ccc;
-                border-radius:8px;
-                padding:10px;
-                margin-bottom:10px;
-                max-width:600px;
-                background: <?= $msg->gelesen ? '#f9f9f9' : '#e6f0ff'; ?>
-            ">
-                <strong><?= htmlspecialchars($msg->sender_name); ?></strong><br>
+        <!-- echo out the system feedback (error and success messages) -->
+        <?php $this->renderFeedbackMessages(); ?>
 
-                <?= htmlspecialchars(mb_strimwidth($msg->message_text, 0, 40, '...')); ?><br>
+        <h3>What happens here ?</h3>
+        <p>
+            This is just a simple CRUD implementation. Creating, reading, updating and deleting things.
+        </p>
+        <p>
+            <form method="post" action="<?php echo Config::get('URL');?>note/create">
+                <label>Text of new note: </label><input type="text" name="note_text" />
+                <input type="submit" value='Create this note' autocomplete="off" />
+            </form>
+        </p>
 
-                <small><?= htmlspecialchars($msg->created_at); ?></small><br><br>
-
-                <button onclick="openMessage(<?= (int)$msg->message_id ?>)">
-                    Nachricht öffnen
-                </button>
-            </div>
-        <?php endforeach; ?>
-    <?php else : ?>
-        <p>Keine Nachrichten vorhanden.</p>
-    <?php endif; ?>
-</div>
-
-<!-- MODAL -->
-<div id="messageModal" style="
-    display:none;
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:rgba(0,0,0,0.5);
-">
-    <div style="
-        background:#fff;
-        padding:20px;
-        max-width:500px;
-        margin:100px auto;
-        border-radius:10px;
-    ">
-        <h3>Nachricht</h3>
-        <p id="modalText"></p>
-        <button onclick="closeModal()">Schließen</button>
+        <?php if ($this->notes) { ?>
+            <table class="note-table">
+                <thead>
+                <tr>
+                    <td>Id</td>
+                    <td>Note</td>
+                    <td>EDIT</td>
+                    <td>DELETE</td>
+                </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($this->notes as $key => $value) { ?>
+                        <tr>
+                            <td><?= $value->note_id; ?></td>
+                            <td><?= htmlentities($value->note_text); ?></td>
+                            <td><a href="<?= Config::get('URL') . 'note/edit/' . $value->note_id; ?>">Edit</a></td>
+                            <td><a href="<?= Config::get('URL') . 'note/delete/' . $value->note_id; ?>">Delete</a></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+            <?php } else { ?>
+                <div>No notes yet. Create some !</div>
+            <?php } ?>
     </div>
 </div>
-
-<script>
-function openMessage(id) {
-    fetch('<?= Config::get("URL"); ?>message/read/' + id)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('modalText').innerText = data.message_text;
-            document.getElementById('messageModal').style.display = 'block';
-        });
-}
-
-function closeModal() {
-    document.getElementById('messageModal').style.display = 'none';
-    location.reload(); // Badge aktualisieren
-}
-</script>
