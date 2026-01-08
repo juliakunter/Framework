@@ -1,65 +1,43 @@
 <div class="container">
-    <h2>Meine Nachrichten</h2>
+    <h1>MessageController/index</h1>
+    <div class="box">
 
-    <?php if (!empty($this->messages)) : ?>
-        <?php foreach ($this->messages as $msg) : ?>
-            <div style="
-                border:1px solid #ccc;
-                border-radius:8px;
-                padding:10px;
-                margin-bottom:10px;
-                max-width:600px;
-                background: <?= $msg->gelesen ? '#f9f9f9' : '#e6f0ff'; ?>
-            ">
-                <strong><?= htmlspecialchars($msg->sender_name); ?></strong><br>
+        <!-- echo out the system feedback (error and success messages) -->
+        <?php $this->renderFeedbackMessages(); ?>
 
-                <?= htmlspecialchars(mb_strimwidth($msg->message_text, 0, 40, '...')); ?><br>
+        <h3>Ihre Unterhaltungen</h3>
 
-                <small><?= htmlspecialchars($msg->created_at); ?></small><br><br>
+        <?php if ($this->conversations) { ?>
+            <table class="message-table">
+                <thead>
+                    <tr>
+                        <td>Partner ID</td>
+                        <td>Letzte Nachricht</td>
+                        <td>Ungelesen</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->conversations as $chat): ?>
+                        <tr>
+                            <td>User #<?= $chat->partner_id ?></td>
+                            <td><?= $chat->last_time ?></td>
+                            <td>
+                                <?php if ($chat->unread > 0): ?>
+                                    <span class="badge red"><?= $chat->unread ?></span>
+                                <?php else: ?>
+                                    0
+                                <?php endif; ?>
+                            </td>
+                            <td><a href="<?= Config::get('URL') . 'message/show/' . $chat->partner_id ?>">Chat öffnen</a></td>
+                        </tr>
+                    <?php endforeach; ?>
 
-                <button onclick="openMessage(<?= (int)$msg->message_id ?>)">
-                    Nachricht öffnen
-                </button>
-            </div>
-        <?php endforeach; ?>
-    <?php else : ?>
-        <p>Keine Nachrichten vorhanden.</p>
-    <?php endif; ?>
-</div>
 
-<!-- MODAL -->
-<div id="messageModal" style="
-    display:none;
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:rgba(0,0,0,0.5);
-">
-    <div style="
-        background:#fff;
-        padding:20px;
-        max-width:500px;
-        margin:100px auto;
-        border-radius:10px;
-    ">
-        <h3>Nachricht</h3>
-        <p id="modalText"></p>
-        <button onclick="closeModal()">Schließen</button>
+                </tbody>
+            </table>
+        <?php } else { ?>
+            <div>Noch keine Unterhaltungen vorhanden.</div>
+        <?php } ?>
+
     </div>
 </div>
-
-<script>
-function openMessage(id) {
-    fetch('<?= Config::get("URL"); ?>message/read/' + id)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('modalText').innerText = data.message_text;
-            document.getElementById('messageModal').style.display = 'block';
-        });
-}
-
-function closeModal() {
-    document.getElementById('messageModal').style.display = 'none';
-    location.reload(); // Badge aktualisieren
-}
-</script>
