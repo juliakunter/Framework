@@ -63,9 +63,9 @@ return array(
      */
     'DB_TYPE' => 'mysql',
     'DB_HOST' => '127.0.0.1',
-    'DB_NAME' => 'huge',
+    'DB_NAME' => 'kunterframework',
     'DB_USER' => 'root',
-    'DB_PASS' => '12345678',
+    'DB_PASS' => '',
     'DB_PORT' => '3306',
     'DB_CHARSET' => 'utf8',
     /**
