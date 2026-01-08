@@ -2,98 +2,120 @@
 
 class MessageModel
 {
-    public static function getInbox()
+    private static function db()
     {
-        $db = DatabaseFactory::getFactory()->getConnection();
-
-        $sql = "
-            SELECT 
-                m.message_id,
-                m.message_text,
-                m.created_at,
-                m.gelesen,
-                u.user_name AS sender_name
-            FROM messages m
-            JOIN users u ON u.user_id = m.sender_id
-            WHERE m.empfaenger_id = :uid
-            ORDER BY m.created_at DESC
-        ";
-
-        $query = $db->prepare($sql);
-        $query->execute([
-            ':uid' => Session::get('user_id')
-        ]);
-
-        return $query->fetchAll(PDO::FETCH_OBJ);
+        return DatabaseFactory::getFactory()->getConnection();
     }
 
-    public static function getMessageById($id)
+    // Nachricht speichern
+    public static function sendMessage($senderId, $receiverId, $text)
     {
-        $db = DatabaseFactory::getFactory()->getConnection();
-
-        $sql = "
-            SELECT message_text, created_at 
-            FROM messages 
-            WHERE message_id = :id
-        ";
-
-        $query = $db->prepare($sql);
-        $query->execute([':id' => $id]);
-
-        return $query->fetch(PDO::FETCH_OBJ);
-    }
-
-    public static function markAsRead($id)
-    {
-        $db = DatabaseFactory::getFactory()->getConnection();
-
-        $sql = "
-            UPDATE messages 
-            SET gelesen = 1 
-            WHERE message_id = :id
-        ";
-
-        $query = $db->prepare($sql);
-        $query->execute([':id' => $id]);
-    }
-
-    public static function sendMessage($senderId, $empfaengerId, $text)
-    {
-        if (trim($text) === '') {
-            return false;
+        if (empty($senderId) || empty($receiverId) || empty($text)) {
+            return false; // Abbruch bei fehlenden Daten
         }
 
-        $db = DatabaseFactory::getFactory()->getConnection();
-
         $sql = "
-            INSERT INTO messages (sender_id, empfaenger_id, message_text, gelesen)
-            VALUES (:s, :e, :t, 0)
+            INSERT INTO messages (sender_id, empfaenger_id, message_text)
+            VALUES (:sender, :receiver, :text)
         ";
 
-        $query = $db->prepare($sql);
-        return $query->execute([
-            ':s' => $senderId,
-            ':e' => $empfaengerId,
-            ':t' => $text
+        return self::db()->prepare($sql)->execute([
+            ':sender'   => $senderId,
+            ':receiver' => $receiverId,
+            ':text'     => $text
         ]);
     }
 
-    public static function countUnread()
+    // Gespräch zwischen zwei Usern laden
+    public static function getConversation($userId, $partnerId)
     {
-        $db = DatabaseFactory::getFactory()->getConnection();
+        $sql = "
+            SELECT *
+            FROM messages
+            WHERE (sender_id = :me AND empfaenger_id = :partner)
+               OR (sender_id = :partner AND empfaenger_id = :me)
+            ORDER BY timestamp ASC
+        ";
 
+        $query = self::db()->prepare($sql);
+        $query->execute([':me' => $userId, ':partner' => $partnerId]);
+
+        return $query->fetchAll();
+    }
+
+    // Nachrichten als gelesen markieren
+    public static function markAsRead($senderId, $receiverId)
+    {
+        $sql = "
+            UPDATE messages
+            SET gelesen = 1
+            WHERE sender_id = :sender AND empfaenger_id = :receiver
+        ";
+
+        return self::db()->prepare($sql)->execute([
+            ':sender'   => $senderId,
+            ':receiver' => $receiverId
+        ]);
+    }
+
+    // Alle Unterhaltungen des Users mit ungelesenen Nachrichten
+    public static function getConversations($userId)
+    {
+        $sql = "
+            SELECT 
+                IF(sender_id = :me, empfaenger_id, sender_id) AS partner_id,
+                MAX(timestamp) AS last_time,
+                SUM(CASE WHEN empfaenger_id = :me AND gelesen = 0 THEN 1 ELSE 0 END) AS unread
+            FROM messages
+            WHERE sender_id = :me OR empfaenger_id = :me
+            GROUP BY partner_id
+            ORDER BY last_time DESC
+        ";
+
+        $query = self::db()->prepare($sql);
+        $query->execute([':me' => $userId]);
+
+        return $query->fetchAll();
+    }
+
+    // Ungelesene Nachrichten von einem Partner zählen
+    public static function countUnreadMessagesFrom($senderId, $receiverId)
+    {
         $sql = "
             SELECT COUNT(*) 
             FROM messages 
-            WHERE empfaenger_id = :uid 
-            AND gelesen = 0
+            WHERE sender_id = :sender AND empfaenger_id = :receiver AND gelesen = 0
         ";
-
-        $query = $db->prepare($sql);
-        $query->execute([
-            ':uid' => Session::get('user_id')
-        ]);
-
+        $query = self::db()->prepare($sql);
+        $query->execute([':sender' => $senderId, ':receiver' => $receiverId]);
         return (int)$query->fetchColumn();
+    }
+
+    // Gesamtanzahl ungelesener Nachrichten
+    public static function countUnreadMessages($userId)
+    {
+        $sql = "
+            SELECT COUNT(*) 
+            FROM messages 
+            WHERE empfaenger_id = :user AND gelesen = 0
+        ";
+        $query = self::db()->prepare($sql);
+        $query->execute([':user' => $userId]);
+        return (int)$query->fetchColumn();
+    }
+
+    // Alle Benutzer, die mit mir Nachrichten haben (für Profil-Liste)
+    public static function getUsersForMessaging($userId)
+    {
+        $sql = "
+            SELECT DISTINCT
+                IF(sender_id = :me, empfaenger_id, sender_id) AS user_id
+            FROM messages
+            WHERE sender_id = :me OR empfaenger_id = :me
+        ";
+        $query = self::db()->prepare($sql);
+        $query->execute([':me' => $userId]);
+
+        return $query->fetchAll(PDO::FETCH_COLUMN);
     }
 }

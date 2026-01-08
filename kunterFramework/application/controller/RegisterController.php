@@ -22,11 +22,25 @@ class RegisterController extends Controller
      */
     public function index()
     {
-        if (LoginModel::isUserLoggedIn()) {
-            Redirect::home();
-        } else {
-            $this->View->render('register/index');
+        // if (LoginModel::isUserLoggedIn()) {
+        //     Redirect::home();
+        // } else {
+        //     $this->View->render('register/index');
+        // }
+        // Wenn niemand eingeloggt ist → zuerst zum Login
+        if (!LoginModel::isUserLoggedIn()) {
+            Redirect::to('login/index');
+            return;
         }
+
+        // Wenn eingeloggt, aber kein Admin (user_account_type != 7) → zurück zur Startseite
+        if (Session::get('user_account_type') != 7) {
+            Redirect::home();
+            return;
+        }
+
+        // Wenn Admin → Formular anzeigen
+        $this->View->render('register/index');
     }
 
     /**
@@ -69,6 +83,7 @@ class RegisterController extends Controller
      */
     public function showCaptcha()
     {
-        CaptchaModel::generateAndShowCaptcha();
+        // CaptchaModel::generateAndShowCaptcha();
+        return false;
     }
 }

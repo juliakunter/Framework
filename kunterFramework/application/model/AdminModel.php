@@ -92,4 +92,43 @@ class AdminModel
             return true;
         }
     }
+
+         /**
+     * Kicks the selected user out of the system instantly by resetting the user's session.
+     * This means, the user will be "logged out".
+     *
+     * @param $typeId - Account type ID 1-7
+     * @param $userId - User ID (to be updated)
+     * @return bool
+     */
+    public static function setAccountType($typeId = null, $userId = null)
+    {
+        if (!$typeId || !$userId) {
+            return false;
+        }
+
+        $db = DatabaseFactory::getFactory()->getConnection();
+
+        if ($userId == Session::get('user_id')) {
+            Session::add('feedback_negative', "Eigener Account kann nicht bearbeitet werden");
+            return false;
+        }
+
+        $query = $db->prepare(
+            "UPDATE users SET user_account_type = :typeId
+            WHERE user_id = :userId
+            LIMIT 1"
+        );
+
+        $query->execute([
+            ':typeId' => $typeId,
+            ':userId' => $userId,
+        ]);
+
+        if ($query->rowCount()== 1){
+            Session::add('feedback_positive', 'Account erfolgreich bearbeitet');
+            return true;
+        }
+
+    }
 }
