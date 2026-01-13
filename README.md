@@ -12,3 +12,6 @@ Notizen
 
 Chatverlauf
 <img width="1157" height="640" alt="Chat verlauf" src="https://github.com/user-attachments/assets/ddf01478-6861-43e0-a328-5e52a9b1d083" />
+
+
+Bei diesen Chatverlauf siehst du eine konevrsation zwischen zwei personen.
