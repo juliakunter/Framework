@@ -13,6 +13,8 @@
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+
+
 /**
  * Configuration for cookie security
  * Quote from PHP manual: Marks the cookie as accessible only through the HTTP protocol. This means that the cookie
@@ -153,4 +155,13 @@ return array(
     'EMAIL_VERIFICATION_FROM_NAME' => 'My Project',
     'EMAIL_VERIFICATION_SUBJECT' => 'Account activation for PROJECT XY',
     'EMAIL_VERIFICATION_CONTENT' => 'Please click on this link to activate your account: ',
+
+    /**
+     * Configuration for: reCAPTCHA
+     * To get your own reCAPTCHA keys, go to https://www.google.com/recaptcha/admin/create
+     */
+
+    'RECAPTCHA_ENABLED' => true,
+    'RECAPTCHA_SITE_KEY' => '6LfEXkksAAAAANun8zJVrp8smvsxVtsOFP8uTnvJ',
+    'RECAPTCHA_SECRET_KEY' => '6LfEXkksAAAAADAk95TSub6pF4I_lt05yj6jcmsQ',
 );

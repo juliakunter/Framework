@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS `huge`.`notes` (
  `note_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
  `note_text` text NOT NULL,

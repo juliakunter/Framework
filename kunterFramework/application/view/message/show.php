@@ -2,7 +2,7 @@
 <div class="container">
 
     <!-- Überschrift des Chats, ergänzt um die Partner-ID -->
-    <h1>Chat zwieschen Lukas und Julia<?= $this->partnerId ?></h1>
+    <h1>Chat zwischen Lukas und Julia<?= $this->partnerId ?></h1>
 
     <!-- Box-Container für den Chat-Inhalt -->
     <div class="box">
@@ -24,7 +24,7 @@
                         padding:8px; margin:5px; border-radius:10px; max-width:70%;
                         <?= $msg->sender_id == Session::get('user_id') 
                             ? 'background:#DCF8C6;margin-left:auto;text-align:right;' 
-                            : 'background:#FFF;margin-right:auto;text-align:left;border:1px solid #ddd;' ?>
+                            : 'background:#FFF;margin-right:auto;text-align:left;border:1px solid #0000009d;' ?>
                     ">
 
                         <!-- Gibt den Nachrichtentext HTML-sicher aus -->

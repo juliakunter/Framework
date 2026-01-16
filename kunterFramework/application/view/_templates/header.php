@@ -57,9 +57,23 @@
                 } ?>>
                     <a href="<?php echo Config::get('URL'); ?>note/index">My Notes</a>
                 </li>
+
+                <li <?php if (View::checkForActiveController($filename, "todo")) {
+                    echo ' class="active" ';
+                } ?>>
+                    <a href="<?php echo Config::get('URL'); ?>todo/index">My Todos</a>
+                </li>
+
+
                 <li <?php if (View::checkForActiveController($filename, "message")) { echo ' class="active" '; } ?> >
                     <a href="<?php echo Config::get('URL'); ?>message/index">Messages</a>
                 </li>
+
+             
+
+
+
+
             <?php } else { ?>
                 <!-- for not logged in users -->
                 <li <?php if (View::checkForActiveControllerAndAction($filename, "login/index")) {
@@ -72,6 +86,8 @@
                 } ?> >
                     <a href="<?php echo Config::get('URL'); ?>register/index">Register</a>
                 </li> -->
+
+              
 
             <?php } ?>
         </ul>
