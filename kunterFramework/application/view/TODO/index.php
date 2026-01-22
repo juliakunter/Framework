@@ -1,60 +1,133 @@
-<div class="container">
-    <h1>My Todo List</h1>
+<style>
+.todo-container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    font-family: Arial, sans-serif;
+}
 
-    <div class="box">
+.add-todo {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
 
-        <!-- Feedback Messages -->
-        <?php $this->renderFeedbackMessages(); ?>
+.add-todo input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
 
-        <!-- Create Todo -->
-        <form method="post" action="<?php echo Config::get('URL'); ?>todo/create">
-            <label>New todo: </label>
-            <input type="text" name="todo_text" required />
-            <input type="submit" value="Add Todo" autocomplete="off" />
-        </form>
+.add-todo button {
+    background: #4f46e5;
+    border: none;
+    color: white;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+}
 
-        <hr>
+.todo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-        <?php if (!empty($this->todos)) { ?>
-            <table class="note-table">
-                <thead>
-                    <tr>
-                        <td>ID</td>
-                        <td>Status</td>
-                        <td>Todo</td>
-                        <td>Delete</td>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($this->todos as $todo) { ?>
-                    <tr>
-                        <td><?= $todo->todo_id; ?></td>
+.todo-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
 
-                        <!-- Toggle done -->
-                        <td>
-                            <a href="<?= Config::get('URL') . 'todo/toggle/' . $todo->todo_id; ?>">
-                                <?= $todo->is_done ? '✔' : '⬜'; ?>
-                            </a>
-                        </td>
+.todo-list li.done input {
+    text-decoration: line-through;
+    color: #777;
+}
 
-                        <!-- Todo text -->
-                        <td style="<?= $todo->is_done ? 'text-decoration: line-through;' : ''; ?>">
-                            <?= htmlentities($todo->todo_text); ?>
-                        </td>
+.circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
 
-                        <!-- Delete -->
-                        <td>
-                            <a href="<?= Config::get('URL') . 'todo/delete/' . $todo->todo_id; ?>">
-                                
-                            </a>
-                        </td>
-                    </tr>
-                <?php } ?>
-                </tbody>
-            </table>
-        <?php } else { ?>
-            <div>No todos yet. Add one!</div>
-        <?php } ?>
+.circle.done {
+    background: #22c55e;
+    border-color: #22c55e;
+}
 
-    </div>
+.todo-text {
+    flex: 1;
+}
+
+.todo-text input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+}
+
+.todo-text input:focus {
+    outline: none;
+    background: white;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.delete {
+    color: #ef4444;
+    text-decoration: none;
+    font-size: 16px;
+}
+</style>
+
+<div class="todo-container">
+    <h2>📝 My Todos</h2>
+
+    <form method="post" action="<?= Config::get('URL'); ?>todo/create" class="add-todo">
+        <input type="text" name="todo_text" placeholder="New todo..." required>
+        <button>＋</button>
+    </form>
+
+    <ul class="todo-list">
+        <?php foreach ($this->todos as $todo): ?>
+            <li class="<?= $todo->is_done ? 'done' : ''; ?>">
+
+                <!-- Kreis -->
+                <a class="circle <?= $todo->is_done ? 'done' : ''; ?>"
+                   href="<?= Config::get('URL'); ?>todo/toggle/<?= $todo->todo_id; ?>">
+                </a>
+
+                <!-- Editierbarer Text -->
+                <form class="todo-text"
+                      method="post"
+                      action="<?= Config::get('URL'); ?>todo/update/<?= $todo->todo_id; ?>">
+                    <input type="text"
+                           name="todo_text"
+                           value="<?= htmlentities($todo->todo_text); ?>"
+                           onblur="this.form.submit()">
+                </form>
+
+                <!-- Delete -->
+                <a class="delete"
+                   href="<?= Config::get('URL'); ?>todo/delete/<?= $todo->todo_id; ?>">
+                    ✖
+                </a>
+
+            </li>
+        <?php endforeach; ?>
+    </ul>
 </div>

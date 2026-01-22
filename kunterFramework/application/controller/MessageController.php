@@ -5,66 +5,108 @@ class MessageController extends Controller
     public function __construct()
     {
         parent::__construct();
-
-        // Zugriff nur für eingeloggte Nutzer
-        Auth::checkAuthentication();
+         Auth::checkAuthentication();
     }
 
-    // Zeigt die Nachrichtenübersicht
     public function index()
-{
-    $userId = Session::get('user_id');
+    {
+        $userId = Session::get('user_id');
+      // $this->view->conversations =
+        $this->View->render('message/index', array(
+            'conversations' => MessageModel::getAllConversations()
+        ));
+    }
 
-    $this->View->render('message/index', [
-        'conversations' => MessageModel::getConversations($userId)
-    ]);
-}
-
-
-    // Zeigt ein einzelnes Gespräch
     public function show($partnerId)
     {
-        $myId = Session::get('user_id'); // eigene User-ID
+        $myId = Session::get('user_id');
+        $this->view->messages = MessageModel::getConversation($myId, $partnerId);
+        MessageModel::markAsRead($partnerId, $myId);
+        
+    }
 
-        $this->View->render('message/show', [
-            // Nachrichten zwischen mir und dem Gesprächspartner
-            'messages'  => MessageModel::getConversation($myId, $partnerId),
-            'partnerId' => $partnerId
+    public static function getConversations($userId)
+    {
+        $db = DatabaseFactory::getFactory()->getConnection();
+
+        $sql = "
+            SELECT 
+                IF(m.sender_id = :uid, m.empfaenger_id, m.sender_id) AS partner_id,
+                u.user_name AS partner_name,
+                m.message_text,
+                m.created_at,
+                m.gelesen
+            FROM messages m
+            JOIN users u 
+              ON u.user_id = IF(m.sender_id = :uid, m.empfaenger_id, m.sender_id)
+            WHERE m.message_id IN (
+                SELECT MAX(message_id)
+                FROM messages
+                WHERE sender_id = :uid OR empfaenger_id = :uid
+                GROUP BY LEAST(sender_id, empfaenger_id), GREATEST(sender_id, empfaenger_id)
+            )
+            ORDER BY m.created_at DESC
+        ";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':uid' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public static function getConversation($myId, $partnerId)
+    {
+        $db = DatabaseFactory::getFactory()->getConnection();
+
+        $stmt = $db->prepare("
+            SELECT *
+            FROM messages
+            WHERE 
+                (sender_id = :me AND empfaenger_id = :partner)
+                OR
+                (sender_id = :partner AND empfaenger_id = :me)
+            ORDER BY created_at ASC
+        ");
+
+        $stmt->execute([
+            ':me' => $myId,
+            ':partner' => $partnerId
         ]);
 
-        // Nachrichten des Partners als gelesen markieren
-        MessageModel::markAsRead($partnerId, $myId);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    // Sendet eine neue Nachricht
-    public function send()
+    public static function sendMessage($senderId, $receiverId, $text)
     {
-        // Prüfen, ob benötigte POST-Daten vorhanden sind
-        if (empty($_POST['receiver_id']) || empty($_POST['message_text'])) {
-            Session::add('feedback_negative', 'Ungültige Anfrage');
-            Redirect::to('message');
-        }
+        $db = DatabaseFactory::getFactory()->getConnection();
 
-        // Nachricht speichern
-        MessageModel::sendMessage(
-            Session::get('user_id'),     // Absender
-            $_POST['receiver_id'],       // Empfänger
-            $_POST['message_text']       // Nachricht
-        );
+        $stmt = $db->prepare("
+            INSERT INTO messages 
+            (sender_id, empfaenger_id, message_text, gelesen, created_at)
+            VALUES (:s, :r, :t, 0, NOW())
+        ");
 
-        // Zur Unterhaltung weiterleiten
-        Redirect::to('message/show/' . $_POST['receiver_id']);
+        $stmt->execute([
+            ':s' => $senderId,
+            ':r' => $receiverId,
+            ':t' => trim(strip_tags($text))
+        ]);
     }
 
-    public function sendTest($receiverId, $text = 'Testnachricht')
-{
-    MessageModel::sendMessage(
-        Session::get('user_id'),
-        $receiverId,
-        urldecode($text)
-    );
+    public static function markAsRead($senderId, $receiverId)
+    {
+        $db = DatabaseFactory::getFactory()->getConnection();
 
-    Redirect::to('message/show/' . $receiverId);
-}
+        $stmt = $db->prepare("
+            UPDATE messages
+            SET gelesen = 1
+            WHERE sender_id = :s
+              AND empfaenger_id = :r
+        ");
 
+        $stmt->execute([
+            ':s' => $senderId,
+            ':r' => $receiverId
+        ]);
+    }
 }
