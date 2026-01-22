@@ -15,3 +15,16 @@ Chatverlauf
 
 
 Bei diesen Chatverlauf siehst du eine konevrsation zwischen zwei personen.
+
+
+
+
+Anmeldung mit den REcapter
+<img width="636" height="712" alt="Garfield_Anmedlung_Roboter" src="https://github.com/user-attachments/assets/ce35021d-9689-47ac-8234-6288a0bc27b0" />
+
+
+
+![Uploading AnmedlungRobotorBilder.png…]()
+
+
+
