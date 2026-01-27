@@ -15,3 +15,17 @@ Chatverlauf
 
 
 Bei diesen Chatverlauf siehst du eine konevrsation zwischen zwei personen.
+
+
+
+
+Anmedlung ich bin kein Robotor
+<img width="636" height="712" alt="Garfield_Anmedlung_Roboter" src="https://github.com/user-attachments/assets/ce35021d-9689-47ac-8234-6288a0bc27b0" />
+
+Bilder auswahl von der Anmedlung ich bin kein Robotor
+<img width="496" height="718" alt="AnmedlungRobotorBilder" src="https://github.com/user-attachments/assets/85af1fb4-5094-440a-bc49-13dbc6c58d8e" />
+
+
+
+
+
